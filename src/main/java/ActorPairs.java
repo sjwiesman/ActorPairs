@@ -45,22 +45,13 @@ public class ActorPairs {
 
             for (int i = 0; i < actors.length -1 ; ++i) {
                 for (int j = i+1; j < actors.length; ++j) {
-                    StringBuilder builder = new StringBuilder();
+                    StringBuilder forwards = new StringBuilder(actors[i]);
+                    forwards.append('\t').append(actors[j]);
+                    context.write(new Text(forwards.toString()), NullWritable.get());
 
-                    if (actors[i].compareTo(actors[j]) == 0) {
-                        continue;
-                    } else if (actors[i].compareTo(actors[j]) < 0) {
-                        builder.append(actors[i])
-                                .append(' ')
-                                .append(actors[j]);
-                    } else {
-                        builder.append(actors[j])
-                                .append(' ')
-                                .append(actors[j]);
-                    }
-
-                    context.write(new Text(builder.toString()), NullWritable.get());
-
+                    StringBuilder backwards = new StringBuilder(actors[j]);
+                    backwards.append('\t').append(actors[i]);
+                    context.write(new Text(backwards.toString()), NullWritable.get());
                 }
             }
         }
