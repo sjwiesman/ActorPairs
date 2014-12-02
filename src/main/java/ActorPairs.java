@@ -44,8 +44,15 @@ public class ActorPairs {
             }
 
             for (int i = 0; i < actors.length -1 ; ++i) {
-                for (int j = i+1; j < actors.length; ++j) {
-                    StringBuilder forwards = new StringBuilder(actors[i]);
+                if (actors[i].trim().length() == 0) {
+			continue;
+		}
+
+		for (int j = i+1; j < actors.length; ++j) {
+                    if (actors[j].trim().length() == 0) {
+			continue;
+		    }
+		    StringBuilder forwards = new StringBuilder(actors[i]);
                     forwards.append('\t').append(actors[j]);
                     context.write(new Text(forwards.toString()), NullWritable.get());
 
