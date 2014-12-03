@@ -4,17 +4,22 @@
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
+import org.apache.hadoop.hbase.mapreduce.TableReducer;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,30 +70,33 @@ public class ActorPairs {
 
     }
 
+
+    public static class Reduce extends TableReducer<Text, NullWritable, Text> {
+
+        public void reduce(Text key, Iterator<NullWritable> value, Context context) throws IOException, InterruptedException{
+            Put put = new Put(key.getBytes());
+            put.add(Bytes.toBytes("f1"), Bytes.toBytes("path"), key.getBytes());
+            context.write(key, put);
+        }
+    }
+
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
 
-        if (args.length < 2) {
+        if (args.length < 1) {
             System.out.println("Error");
             return;
         }
 
-        Configuration conf = new Configuration();
-        Job job = new Job(conf, "actor pairs");
+        Configuration conf = HBaseConfiguration.create();
+        Job job = new Job(conf, "pairs");
         job.setJarByClass(ActorPairs.class);
         job.setMapperClass(Map.class);
-        job.setReducerClass(Reducer.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(NullWritable.class);
-
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(NullWritable.class);
-
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
-
-        boolean result = job.waitForCompletion(true);
-        System.exit(result ? 0 : 1);
-
+        FileInputFormat.setInputPaths(job, new Path(args[0]));
+        TableMapReduceUtil.initTableReducerJob("paths", Reduce.class, job);
+        job.setReducerClass(Reduce.class);
+        job.waitForCompletion(true);
     }
 }
 
