@@ -44,20 +44,31 @@ public class ActorPairs {
             }
 
             for (int i = 0; i < actors.length -1 ; ++i) {
-                if (actors[i].trim().length() == 0) {
-			continue;
-		}
+                
+                final String a = actors[i].trim();
 
-		for (int j = i+1; j < actors.length; ++j) {
-                    if (actors[j].trim().length() == 0) {
-			continue;
-		    }
-		    StringBuilder forwards = new StringBuilder(actors[i].trim());
-                    forwards.append('\t').append(actors[j].trim());
+                if (a.length() == 0) {
+			        continue;
+		        }
+
+		        for (int j = i+1; j < actors.length; ++j) {
+                    
+                    final String b = actors[j].trim();
+
+                    if (b.length() == 0) {
+			            continue;
+		            }
+
+                    if (a.equals(b)) {
+                        continue;
+                    }
+
+                    StringBuilder forwards = new StringBuilder(a);
+                    forwards.append('\t').append(b);
                     context.write(new Text(forwards.toString()), NullWritable.get());
 
-                    StringBuilder backwards = new StringBuilder(actors[j].trim());
-                    backwards.append('\t').append(actors[i].trim());
+                    StringBuilder backwards = new StringBuilder(b);
+                    backwards.append('\t').append(a);
                     context.write(new Text(backwards.toString()), NullWritable.get());
                 }
             }
