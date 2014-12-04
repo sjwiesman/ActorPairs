@@ -52,12 +52,12 @@ public class ActorPairs {
                     if (actors[j].trim().length() == 0) {
 			continue;
 		    }
-		    StringBuilder forwards = new StringBuilder(actors[i]);
-                    forwards.append('\t').append(actors[j]);
+		    StringBuilder forwards = new StringBuilder(actors[i].trim());
+                    forwards.append('\t').append(actors[j].trim());
                     context.write(new Text(forwards.toString()), NullWritable.get());
 
-                    StringBuilder backwards = new StringBuilder(actors[j]);
-                    backwards.append('\t').append(actors[i]);
+                    StringBuilder backwards = new StringBuilder(actors[j].trim());
+                    backwards.append('\t').append(actors[i].trim());
                     context.write(new Text(backwards.toString()), NullWritable.get());
                 }
             }
